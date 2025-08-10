@@ -1,0 +1,49 @@
+*.DS_Store
+Thumbs.db
+
+# 浏览器数据
+userdata/*
+!userdata/.gitkeep
+
+# 编辑器/IDE 文件
+.vscode/
+.idea/
+.cloudide/
+*.sublime-project
+*.sublime-workspace
+
+# 依赖目录
+node_modules/
+vendor/
+
+# 编译输出
+dist/
+build/
+*.class
+
+# 日志文件
+*.log
+*.log.*
+
+!log/.gitkeep
+
+# 临时文件
+*.tmp
+*.swp
+*~
+
+# 环境配置文件
+.env
+.env.local
+
+# 包管理器文件
+package-lock.json
+yarn.lock
+
+# 缓存目录
+.cache/
+
+# 字节编译 / 优化 / DLL 文件
+__pycache__/
+*.py[cod]
+*$py.class

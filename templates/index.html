@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>半自动化测试执行工具</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <style>
+      .form-inline-wrap {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: center;
+      }
+      .form-inline-wrap form {
+        margin-bottom: 0;
+      }
+      .code-block, .error-block {
+        white-space: pre-wrap;
+        word-break: break-all;
+      }
+    </style>
+</head>
+<body class="p-4 bg-light" style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+<div class="card mb-4">
+  <div class="card-body">
+    <h1 class="card-title">
+      <a href="/" title="返回首页" style="text-decoration: none; color: inherit;">
+        🧪 半自动化测试执行工具
+      </a>
+    </h1>
+  </div>
+</div>
+
+    <!-- 基本控制 -->
+    <div class="card mb-4 p-3">
+      <h5 class="mb-3">基础操作</h5>
+      <div class="form-inline-wrap">
+        <form action="/start" method="post">
+            <button class="btn btn-primary">初始化浏览器</button>
+        </form>
+
+        <form action="/refresh" method="post">
+            <button class="btn btn-secondary">刷新页面</button>
+        </form>
+
+        <form action="/load" method="post" class="d-flex">
+            <input name="url" placeholder="输入URL" class="form-control me-2" style="width:250px;">
+            <button class="btn btn-success">加载页面</button>
+        </form>
+
+
+            <button id="btnScreenshot" class="btn btn-info">截图</button>
+
+      </div>
+    </div>
+
+    <div class="card mb-4 p-3">
+      <h5>动态业务方法</h5>
+      {% for category, funcs in grouped_methods.items() %}
+        <h6 class="mt-3">{{ category }}</h6>
+        <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+          {% for func in funcs %}
+              <form action="/run_func/{{ func.func_name }}" method="post">
+                  <button class="btn btn-outline-dark">{{ func.display }}</button>
+              </form>
+          {% endfor %}
+        </div>
+      {% endfor %}
+    </div>
+
+    <div class="row">
+      <div class="col-md-6">
+        <div class="card mb-4 p-3">
+          <form action="/nl_to_code" method="post">
+              <label class="form-label">自然语言 → Playwright指令</label>
+              <textarea name="nl_text" rows="4" class="form-control mb-2" placeholder="例如：打开百度并搜索MCP"></textarea>
+              <button class="btn btn-success">执行</button>
+          </form>
+          {% if generated_code %}
+          <div class="mt-3 p-3 border bg-light code-block">
+              <strong>生成代码：</strong>
+              <div>{{ generated_code }}</div>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="col-md-6">
+        <div class="card mb-4 p-3">
+          <form action="/execute_code" method="post">
+              <label class="form-label">执行任意 Python</label>
+                <textarea name="code" rows="4" class="form-control" placeholder="输入 Python 代码，如&#10;page.goto(&quot;https://www.baidu.com&quot;)&#10;page.fill(&#39;input[name=&quot;wd&quot;]&#39;, &quot;mcp&quot;)&#10;page.click(&#39;input[type=&quot;submit&quot;]&#39;)"></textarea>
+              <button class="btn btn-warning mt-2">执行</button>
+          </form>
+          {% if code_output %}
+          <div class="mt-3 p-3 border bg-light code-block">{{ code_output }}</div>
+          {% endif %}
+          {% if error_message %}
+          <div class="mt-3 p-3 border bg-danger text-white error-block">
+              <!--strong>执行出错：</strong-->
+              {{ error_message }}
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div class="card mb-4 p-3">
+      <h5 class="mb-3">页面截图</h5>
+      <div id="screenshotContainer">
+          {% if screenshot_data %}
+          <img src="data:image/png;base64,{{ screenshot_data }}" class="img-fluid border" />
+          {% endif %}
+      </div>
+    </div>
+</body>
+</html>
+    <script>
+    document.getElementById('btnScreenshot').addEventListener('click', function() {
+        fetch('/screenshot', { method: 'POST' })
+        .then(res => res.json())
+        .then(data => {
+            if(data.success){
+                // 请求成功，刷新图片，避免缓存，加随机参数
+                const container = document.getElementById('screenshotContainer');
+                container.innerHTML = `<img src="data:image/png;base64,${data.image}" style="max-width:100%; border:1px solid #ccc;" />`;
+            } else if(data.error){
+                alert('截图失败: ' + data.error);
+            }
+        }).catch(e => alert('截图请求失败: ' + e));
+    });
+    </script>
