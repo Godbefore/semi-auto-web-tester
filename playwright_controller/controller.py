@@ -1,15 +1,16 @@
-import importlib
 import os
-import pkgutil
-
+from playwright_controller.base_module import BaseModule
+from common.read_data import read_yaml
 from playwright.sync_api import sync_playwright
 
 
-class BrowserController:
+class BrowserController(BaseModule):
     def __init__(self):
         self.playwright = None
         self.browser = None
         self.page = None
+        self.context = None
+        self.config = read_yaml("config.yaml")
 
     def run_method_by_name(self, name):
         method = getattr(self, name, None)
@@ -18,21 +19,16 @@ class BrowserController:
         else:
             raise Exception(f"未找到方法: {name}")
 
-    # ======================
-    # 基础封装方法
-    # ======================
     def load_url(self, url):
-        page = self.start_browser()
-        page.goto(url)
+        self.page.goto(url)
 
     def refresh(self):
         if self.page:
             self.page.reload()
 
-    # ======================
-    # 代码执行
-    # ======================
     def execute_code(self, code, globals_dict):
+        if self.page is None:
+            raise Exception("Target page, context or browser has been closed")
         exec(code, globals_dict)
 
     def close_browser(self):
@@ -74,8 +70,8 @@ class BrowserController:
         self.context = self.browser
         self.page = self.context.pages[0] if self.context.pages else self.context.new_page()
 
-        self.page.set_default_timeout(15000)  # 元素操作相关超时
-        self.page.set_default_navigation_timeout(30000)  # 页面跳转相关超时
-        return "浏览器已重启"
+        self.page.set_default_timeout(self.config["timeout"]["action_timeout"])  # 元素操作相关超时
+        self.page.set_default_navigation_timeout(self.config["timeout"]["page_timeout"])  # 页面跳转相关超时
+        return "浏览器初始化完成"
 
 browser_controller = BrowserController()

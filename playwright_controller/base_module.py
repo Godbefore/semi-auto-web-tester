@@ -1,13 +1,8 @@
-from typing import TYPE_CHECKING, Optional
-
-if TYPE_CHECKING:
-    from playwright.sync_api import Page
+from playwright.sync_api import Page
 
 class BaseModule:
-    page: Optional["Page"]
-
-    def __init__(self):
-        self.page = None
+    page: Page or None
+    config: dict
 
     def click_button(self, selector):
         self.page.click(selector)

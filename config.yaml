@@ -1,2 +1,9 @@
-deepseek:
-  api_key: sk-f4ae8888************************
+timeout:
+  page_timeout: 20000
+  action_timeout: 15000
+
+api_keys:
+  openai: sk-1f4ae8888***********************
+  deepseek: sk-f4ae8888***********************
+  claude: sk-1f4ae8888***********************
+  gemini: sk-1f4ae8888***********************

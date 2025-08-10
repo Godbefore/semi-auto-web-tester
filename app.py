@@ -8,7 +8,7 @@ from playwright_controller.controller import browser_controller
 from playwright_controller.methods_registry import REGISTERED_METHODS
 from common.read_data import read_yaml
 from collections import defaultdict
-from ai_executor.deepseek_handler import DeepSeekHandler
+from ai_executor.multillm_handler import MultiLLMHandler
 from playwright_controller.methods_loader import load_all_modules
 
 app = Flask(__name__)
@@ -19,8 +19,9 @@ load_all_modules()
 last_error = ''
 
 config_path = os.path.join(os.path.dirname(__file__), 'config.yaml')
-deepseek_api = read_yaml(config_path)["deepseek"]["api_key"]
-deepseek_handler = DeepSeekHandler(api_key=deepseek_api)
+deepseek_api = read_yaml(config_path)["api_keys"]["deepseek"]
+deepseek_handler = MultiLLMHandler("deepseek", deepseek_api)
+# openai_handler = MultiLLMHandler("openai", openai_api)
 
 
 class DummyPage:
@@ -164,6 +165,8 @@ def nl_to_code():
 
         # 1. 调用 DeepSeek API 获取代码
         generated_code = deepseek_handler.natural_to_playwright(natural_text)
+        # 调用 OpenAI API 获取代码
+        # generated_code = openai_handler.natural_to_playwright(natural_text)
 
         # 安全过滤：删除可能导致冲突的代码
         import re
