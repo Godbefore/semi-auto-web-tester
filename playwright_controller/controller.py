@@ -1,16 +1,9 @@
 import os
 from playwright_controller.base_module import BaseModule
-from common.read_data import read_yaml
 from playwright.sync_api import sync_playwright
 
 
 class BrowserController(BaseModule):
-    def __init__(self):
-        self.playwright = None
-        self.browser = None
-        self.page = None
-        self.context = None
-        self.config = read_yaml("config.yaml")
 
     def run_method_by_name(self, name):
         method = getattr(self, name, None)
@@ -64,7 +57,9 @@ class BrowserController(BaseModule):
         self.browser = self.playwright.chromium.launch_persistent_context(
             user_data_dir=user_data_dir,
             headless=False,
-            args=["--start-maximized"]
+            args=["--start-maximized"],
+            no_viewport=True,
+            timezone_id=self.config['timezone'],
         )
 
         self.context = self.browser
@@ -72,6 +67,7 @@ class BrowserController(BaseModule):
 
         self.page.set_default_timeout(self.config["timeout"]["action_timeout"])  # 元素操作相关超时
         self.page.set_default_navigation_timeout(self.config["timeout"]["page_timeout"])  # 页面跳转相关超时
+        self.page.goto(self.config["url"])
         return "浏览器初始化完成"
 
 browser_controller = BrowserController()

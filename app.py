@@ -5,7 +5,7 @@ from datetime import datetime
 from flask import Flask, render_template, request, redirect, url_for, jsonify, send_from_directory
 from common.logger import logger
 from playwright_controller.controller import browser_controller
-from playwright_controller.methods_registry import REGISTERED_METHODS
+from playwright_controller.methods_registry import REGISTERED_METHODS, get_registered_methods
 from common.read_data import read_yaml
 from collections import defaultdict
 from ai_executor.multillm_handler import MultiLLMHandler
@@ -21,7 +21,6 @@ last_error = ''
 config_path = os.path.join(os.path.dirname(__file__), 'config.yaml')
 deepseek_api = read_yaml(config_path)["api_keys"]["deepseek"]
 deepseek_handler = MultiLLMHandler("deepseek", deepseek_api)
-# openai_handler = MultiLLMHandler("openai", openai_api)
 
 
 class DummyPage:
@@ -49,13 +48,10 @@ def handle_exception(e):
     return index(), 200
 
 
-def get_registered_funcs():
-    return [{"name": m["func_name"], "display": m["display"]} for m in REGISTERED_METHODS]
-
 @app.route('/')
 def index():
     grouped_methods = defaultdict(list)
-    for m in sorted(REGISTERED_METHODS, key=lambda x: (x["category"], x["order"])):
+    for m in get_registered_methods():
         grouped_methods[m["category"]].append(m)
     return render_template('index.html',
                            code_output='',
@@ -103,6 +99,7 @@ def run_func(name):
 @app.route('/execute_code', methods=['POST'])
 def execute_code():
     code = request.form.get('code')
+    logger.info(f"将要执行的python代码是：{code}")
     output = ''
     if code:
         if browser_controller.page is None:
@@ -165,8 +162,6 @@ def nl_to_code():
 
         # 1. 调用 DeepSeek API 获取代码
         generated_code = deepseek_handler.natural_to_playwright(natural_text)
-        # 调用 OpenAI API 获取代码
-        # generated_code = openai_handler.natural_to_playwright(natural_text)
 
         # 安全过滤：删除可能导致冲突的代码
         import re

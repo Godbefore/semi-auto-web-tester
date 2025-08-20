@@ -1,17 +1,16 @@
+from common.read_data import read_yaml
 from playwright.sync_api import Page
 
+
 class BaseModule:
-    page: Page or None
-    config: dict
+    def __init__(self):
+        self.playwright = None
+        self.browser = None
+        self.page:Page|None = None
+        self.context = None
+        self._config_path = "config.yaml"  # 存储路径以便复用
 
-    def click_button(self, selector):
-        self.page.click(selector)
-        return f"点击了按钮：{selector}"
-
-    def input_text(self, selector, text):
-        self.page.fill(selector, text)
-        return f"在{selector}输入了文本：{text}"
-
-    def select_option(self, selector, value):
-        self.page.select_option(selector, value)
-        return f"选择了{selector}的选项：{value}"
+    @property
+    def config(self):
+        """动态读取YAML文件，确保每次获取最新配置"""
+        return read_yaml(self._config_path)
