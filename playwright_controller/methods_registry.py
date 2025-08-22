@@ -42,7 +42,7 @@ def register_method(display_name, category="通用", order=0):
             "order": order,
             "func": wrapper
         })
-        return wrapper
+        return func
     return decorator
 
 
